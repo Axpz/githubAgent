@@ -1,9 +1,7 @@
-# core/notifier.py
-
 class Notifier:
-    def __init__(self):
+    def __init__(self, settings):
+        self.settings = settings
+    
+    def notify(self, report):
+        # Implement notification logic, e.g., send email or Slack message
         pass
-
-    def notify(self, updates):
-        # Implement the notification logic here
-        print("Notifying about updates:", updates)

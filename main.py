@@ -1,56 +1,58 @@
-import argparse
 import threading
-import time
-from core.subscription_manager import SubscriptionManager
-from core.update_fetcher import UpdateFetcher
+import shlex
+
+from argparse import ArgumentError
+
+from config import Config
+from scheduler import Scheduler
+from github_client import GitHubClient
 from core.notifier import Notifier
 from core.report_generator import ReportGenerator
+from llm import LLM
+from core.subscription_manager import SubscriptionManager
+from command_handler import CommandHandler
+
+def run_scheduler(scheduler):
+    scheduler.start()
 
 def main():
-    parser = argparse.ArgumentParser(description="Interactive Tool for Managing Subscriptions and Updates")
-    parser.add_argument('-a', '--add-subscription', type=str, nargs='?', const='', help='Add a new subscription')
-    parser.add_argument('-r', '--remove-subscription', type=str, help='Remove an existing subscription')
-    parser.add_argument('-f', '--fetch-updates', action='store_true', help='Fetch updates immediately')
-    args = parser.parse_args()
-
-    subscription_manager = SubscriptionManager()
-    fetcher = UpdateFetcher()
-    notifier = Notifier()
-    report_generator = ReportGenerator()
-
-    if args.add_subscription:
-        subscription_manager.add(args.add_subscription)
-        print(f"Added subscription: {args.add_subscription}")
-
-    if args.remove_subscription:
-        subscription_manager.remove(args.remove_subscription)
-        print(f"Removed subscription: {args.remove_subscription}")
-
-    if args.fetch_updates:
-        repositories = subscription_manager.get_subscription()
-        updates = fetcher.fetch_updates(repositories)
-        if updates:
-            notifier.notify(updates)
-        report_generator.generate_report(updates)
-        print("Fetched and processed updates")
-
-    # Start the scheduler in the background
-    scheduler_thread = threading.Thread(target=scheduler, args=(subscription_manager, fetcher, notifier, report_generator))
+    config = Config()
+    github_client = GitHubClient(config.github_token)
+    notifier = Notifier(config.notification_settings)
+    llm = LLM()
+    report_generator = ReportGenerator(llm)
+    subscription_manager = SubscriptionManager(config.subscriptions_file)
+    command_handler = CommandHandler(github_client, subscription_manager, report_generator)
+    
+    scheduler = Scheduler(
+        github_client=github_client,
+        notifier=notifier,
+        report_generator=report_generator,
+        subscription_manager=subscription_manager,
+        interval=config.update_interval
+    )
+    
+    scheduler_thread = threading.Thread(target=run_scheduler, args=(scheduler,))
     scheduler_thread.daemon = True
-    scheduler_thread.start()
+    # scheduler_thread.start()
 
-    # Keep the main thread alive to accept commands
+    parser = command_handler.parser
+    command_handler.print_help()
+
     while True:
-        time.sleep(1)
+        try:
+            user_input = input("cmd> ")
+            if user_input in ['exit', 'quit']:
+                break
+            try:
+                args = parser.parse_args(shlex.split(user_input))
+                if args.command is None:
+                    continue
+                args.func(args)
+            except SystemExit as e:
+                print("Invalid command. Type 'help' to see the list of available commands.")
+        except Exception as e:
+            print(f"Unexpected error: {e}")
 
-def scheduler(subscription_manager, fetcher, notifier, report_generator):
-    while True:
-        repositories = subscription_manager.get_subscription()
-        updates = fetcher.fetch_updates(repositories)
-        if updates:
-            notifier.notify(updates)
-        report_generator.generate_report(updates)
-        time.sleep(3 * 3600)  # Run every three hour
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
