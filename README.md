@@ -56,6 +56,10 @@ To run tests, use:
 pytest
 ```
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=axpz/githubAgent&type=Date)](https://star-history.com/#axpz/githubAgent&Date)
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
@@ -63,4 +67,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Contact
 
 For any questions or suggestions, please open an issue or contact the repository owner.
-
