@@ -10,6 +10,7 @@ import (
 	"github.com/coreos/go-oidc"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
+	"k8s.io/apiserver/pkg/server"
 
 	"agent/api/auth"
 )
@@ -22,7 +23,13 @@ var (
 )
 
 func GithubCallbackHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() {
+		stopCh := server.SetupSignalHandler()
+		<-stopCh
+		cancel()
+	}()
 
 	state, err := r.Cookie("state")
 	if err != nil {
