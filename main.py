@@ -19,7 +19,7 @@ def main():
     config = Config()
     github_client = GitHubClient(config.github_token)
     notifier = Notifier(config.notification_settings)
-    llm = LLM()
+    llm = LLM(config)
     report_generator = ReportGenerator(llm)
     subscription_manager = SubscriptionManager(config.subscriptions_file)
     command_handler = CommandHandler(github_client, subscription_manager, report_generator)
@@ -34,14 +34,14 @@ def main():
     
     scheduler_thread = threading.Thread(target=run_scheduler, args=(scheduler,))
     scheduler_thread.daemon = True
-    # scheduler_thread.start()
+    scheduler_thread.start()
 
     parser = command_handler.parser
     command_handler.print_help()
 
     while True:
         try:
-            user_input = input("cmd> ")
+            user_input = input("Github agent> ")
             if user_input in ['exit', 'quit']:
                 break
             try:

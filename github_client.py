@@ -2,6 +2,7 @@ import requests
 import datetime
 
 class GitHubClient:
+    API_BASE_URL = 'https://api.github.com'
     def __init__(self, token):
         self.token = token
         self.headers = {'Authorization': f'token {self.token}'}
@@ -16,19 +17,19 @@ class GitHubClient:
         return updates
 
     def fetch_commits(self, repo):
-        url = f'https://api.github.com/repos/{repo}/commits'
+        url = f'{self.API_BASE_URL}/repos/{repo}/commits'
         response = requests.get(url, headers=self.headers)
         response.raise_for_status()
         return response.json()
 
     def fetch_issues(self, repo):
-        url = f'https://api.github.com/repos/{repo}/issues'
+        url = f'{self.API_BASE_URL}/repos/{repo}/issues'
         response = requests.get(url, headers=self.headers)
         response.raise_for_status()
         return response.json()
 
     def fetch_pull_requests(self, repo):
-        url = f'https://api.github.com/repos/{repo}/pulls'
+        url = f'{self.API_BASE_URL}/repos/{repo}/pulls'
         response = requests.get(url, headers=self.headers)
         response.raise_for_status()
         return response.json()

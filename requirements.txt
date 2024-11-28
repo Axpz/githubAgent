@@ -1,3 +1,4 @@
 # List your project dependencies here
 requests
 openai
+smtplib

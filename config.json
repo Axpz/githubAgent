@@ -5,5 +5,10 @@
         "slack_webhook_url": "your_slack_webhook_url"
     },
     "subscriptions_file": "subscriptions.json",
-    "update_interval": 86400
+    "update_interval": 86400,
+
+    "llm_model": "deepseek-chat",
+    "llm_token_env_variable": "DEEPSEEK_API_KEY", 
+    "llm_base_url": "https://api.deepseek.com",
+    "llm_dry_run": true
 }

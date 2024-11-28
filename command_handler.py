@@ -9,7 +9,7 @@ class CommandHandler:
 
     def create_parser(self):
         parser = argparse.ArgumentParser(
-            description='GitHub Sentinel Command Line Interface',
+            description='GitHub Agent Command Line Interface',
             formatter_class=argparse.RawTextHelpFormatter
         )
         subparsers = parser.add_subparsers(title='Commands', dest='command')
