@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"githubagent/proto/listwatcher"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -12,6 +13,8 @@ import (
 	"k8s.io/klog/v2"
 
 	genericapiserver "k8s.io/apiserver/pkg/server"
+
+	"githubagent/internal/server"
 )
 
 func init() {
@@ -27,7 +30,7 @@ func NewCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:                conponentName,
-		Long:               ``,
+		Long:               `Start the agent server`,
 		DisableFlagParsing: true,
 		SilenceUsage:       true,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -55,10 +58,16 @@ func NewCommand() *cobra.Command {
 func Run(ctx context.Context, s *AgentServer) error {
 	klog.InfoS("Golang settings", "GOGC", os.Getenv("GOGC"), "GOMAXPROCS", os.Getenv("GOMAXPROCS"), "GOTRACEBACK", os.Getenv("GOTRACEBACK"))
 
-	// done := make(chan struct{})
-
-	// Setup event recorder if required.
-	// makeEventRecorder(ctx, kubeDeps, nodeName)
+	grpcOptions := GrpcServerOptions{
+		Port:     "50051",
+		Services: []listwatcher.ListWatchServiceServer{server.NewListWatchServiceServer()},
+	}
+	grpcs := NewGrpcServer(&grpcOptions)
+	go func() {
+		if err := grpcs.Start(); err != nil {
+			fmt.Printf("failed to start grpc server: %v", err)
+		}
+	}()
 
 	if err := s.ListenAndServe(ctx); err != nil && ctx.Err() == nil {
 		klog.ErrorS(err, "Failed to run AgentServer")

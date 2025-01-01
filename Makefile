@@ -1,33 +1,49 @@
 # Variables
-APP_NAME := githubAgent
-SRC_FILE := cmd/server/main.go
+APP_SVR_NAME := agentServer
+SRC_SVR_FILE := cmd/server/main.go
+
+APP_AGENT_NAME := agent
+SRC_AGENT_FILE := cmd/agent/main.go
+
 OUTPUT_DIR := bin
-OUTPUT_FILE := $(OUTPUT_DIR)/$(APP_NAME)
+OUTPUT_SVR_FILE := $(OUTPUT_DIR)/$(APP_SVR_NAME)
+OUTPUT_AGENT_FILE := $(OUTPUT_DIR)/$(APP_AGENT_NAME)
 GO := go
 
 # Default target
 .PHONY: all
 all: lint build
 
+.PHONY: proto
+proto:
+	protoc \
+		--proto_path=$(PROTO_DIR) \
+		--go_out=$(OUT_DIR) \
+		--go-grpc_out=$(OUT_DIR) \
+		$(PROTO_DIR)/*.proto
+
 # Lint the Go source code
 .PHONY: lint
 lint:
-	@echo "Running linter on $(SRC_FILE)..."
-	#golangci-lint run ./... || echo "Install golangci-lint: https://golangci-lint.run/usage/install/"
+	@echo "Running linter on $(SRC_SVR_FILE)..."
+	@echo "Running linter on $(SRC_AGENT_FILE)..."
 
 # Build the Go application
 .PHONY: build
 build:
-	@echo "Building $(SRC_FILE)..."
+	@echo "Building $(SRC_SVR_FILE)..."
 	@mkdir -p $(OUTPUT_DIR)
-	$(GO) build -o $(OUTPUT_FILE) $(SRC_FILE)
-	@echo "Build complete: $(OUTPUT_FILE)"
+	$(GO) build -o $(OUTPUT_SVR_FILE) $(SRC_SVR_FILE)
+
+	@echo "Building $(SRC_AGENT_FILE)..."
+	$(GO) build -o $(OUTPUT_AGENT_FILE) $(SRC_AGENT_FILE)
+	@echo "Build complete: $(OUTPUT_AGENT_FILE)"
 
 # Run the Go application
 .PHONY: run
-run:
-	@echo "Running $(OUTPUT_FILE)..."
-	$(OUTPUT_FILE)
+run: build
+	@echo "Running $(OUTPUT_SVR_FILE)..."
+	$(OUTPUT_SVR_FILE)
 
 # Run Go tests
 .PHONY: test

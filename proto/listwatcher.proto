@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package listwatcher;
+
+import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto"; // Import the Timestamp type
+
+// Specify the Go package for the generated code
+option go_package = "githubagent/proto/listwatcher;listwatcher";
+
+// Define the ListWatch service
+service ListWatchService {
+  // ListWatch method: streams the current state of all items and updates.
+  rpc ListWatch(stream Event) returns (stream Event);
+}
+
+// Define a change event for an item
+message Event {
+  string id = 1;                            // Unique identifier for the event
+  google.protobuf.Any data = 2;             // The event data, stored as a generic protobuf 'Any' type
+  google.protobuf.Timestamp timestamp = 3;  // Timestamp of when the event occurred
+  string type = 4;                          // Type of event (e.g., "added", "updated", "deleted")
+}
+
