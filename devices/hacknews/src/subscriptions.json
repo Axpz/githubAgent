@@ -1,0 +1,5 @@
+[
+    "langchain-ai/langchain",
+    "dingodb/dingo",
+    "black-forest-labs/flux"
+]

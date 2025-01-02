@@ -18,19 +18,19 @@ const (
 	Buff_Size = 10
 )
 
-type AgentServerService struct {
+type ListWatchService struct {
 	pb.UnimplementedListWatchServiceServer
 	mu      sync.Mutex
 	clients map[string]chan *pb.Event
 }
 
-func NewListWatchServiceServer() *AgentServerService {
-	return &AgentServerService{
+func NewListWatchServiceServer() *ListWatchService {
+	return &ListWatchService{
 		clients: make(map[string]chan *pb.Event),
 	}
 }
 
-func (s *AgentServerService) ListWatch(stream pb.ListWatchService_ListWatchServer) error {
+func (s *ListWatchService) ListWatch(stream pb.ListWatchService_ListWatchServer) error {
 	req, err := stream.Recv()
 	if err != nil {
 		klog.Errorf("receiving message error : %v", err)

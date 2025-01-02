@@ -9,6 +9,10 @@ GitHub Agent is an open-source AI-based tool designed for developers and project
 - **Notification System**: Notify users of new updates via email, Slack, etc.
 - **Report Generation**: Generate regular update reports (daily/weekly) to keep track of project changes.
 
+## Design
+为了充分利用边缘算力，设计架构如下![local image](./docs/arch.png "High-level design")
+
+
 ## Installation
 
 1. Clone the repository:
@@ -37,7 +41,7 @@ GitHub Agent is an open-source AI-based tool designed for developers and project
 2. Run GitHub Agent: To start fetching updates and generating reports, run:
 
    ```bash
-   python main.py
+   bash main.sh start
    ```
 
 3. Configure Notifications: Adjust the notifier.py module to set up your preferred notification channels (e.g., email, Slack).

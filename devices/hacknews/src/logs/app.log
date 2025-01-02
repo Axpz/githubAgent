@@ -1,0 +1,12 @@
+2025-01-03 16:11:50 | INFO | main:main:60 - start, lets go
+2025-01-03 16:11:50 | INFO | report_generator:_preload_prompts:18 - get prompt file template prompts/github_prompt.txt
+2025-01-03 16:11:50 | INFO | report_generator:_preload_prompts:18 - get prompt file template prompts/hacker_news_prompt.txt
+2025-01-03 16:11:50 | INFO | report_generator:_preload_prompts:18 - get prompt file template prompts/hacker_news_hours_topic_prompt.txt
+2025-01-03 16:11:50 | INFO | main:hacknews_topic_job:44 - [开始执行定时任务]Hacker News 热点话题跟踪
+2025-01-03 16:11:50 | DEBUG | hacknews_client:export_top_stories:74 - Exporting top stories to a markdown file.
+2025-01-03 16:11:50 | DEBUG | hacknews_client:fetch_top_stories:25 - Fetching top stories from Hacker News.
+2025-01-03 16:11:52 | DEBUG | hacknews_client:parse_stories:47 - Parsing HTML content to extract top stories.
+2025-01-03 16:11:52 | INFO | hacknews_client:parse_stories:60 - Successfully parsed 30 stories.
+2025-01-03 16:11:52 | INFO | hacknews_client:export_top_stories:96 - Top stories exported to: reports/hacker_news/2025-01-03/16.md
+2025-01-03 16:12:27 | INFO | report_generator:_generate_report:43 - hacker_news_hours_topic report saved to reports/hacker_news/2025-01-03/16_topic.md
+2025-01-03 16:12:27 | INFO | main:hacknews_topic_job:47 - [定时任务执行完毕]

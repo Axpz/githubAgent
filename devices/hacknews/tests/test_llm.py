@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from llm import LLM
-from config import Config
+from devices.hacknews.llm import LLM
+from devices.hacknews.config import Config
 
 # class TestNotifier(unittest.TestCase):
 #     def test_notify(self):

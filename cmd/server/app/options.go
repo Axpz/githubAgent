@@ -3,16 +3,16 @@ package app
 import (
 	"context"
 	"fmt"
+	"githubagent/internal/server"
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 )
 
 const (
-	GCPeriod = time.Minute
+	GCPeriod = 10 * time.Minute
 )
 
 type AgentServer struct {
@@ -31,21 +31,8 @@ func (s *AgentServer) StartGarbageCollection() {
 }
 
 func (s *AgentServer) ListenAndServe(ctx context.Context) error {
-	// Create a Gin router
-	router := gin.Default()
 
-	// Define a route for the GET request at the root URL
-	router.GET("/healthz", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "health",
-		})
-	})
-
-	router.GET("/ready", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "ready",
-		})
-	})
+	router := server.RegisterRoutes()
 
 	// Create an HTTP server to host the Gin router
 	server := &http.Server{
