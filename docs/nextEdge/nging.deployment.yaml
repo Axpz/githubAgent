@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment2
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx2
+  template:
+    metadata:
+      labels:
+        app: nginx2
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: default
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  # 这个服务类型可以改成 ClusterIP 或者 NodePort
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service2
+  namespace: default
+spec:
+  selector:
+    app: nginx2
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  # 这个服务类型可以改成 ClusterIP 或者 NodePort
+  type: ClusterIP
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: nginx-ingressroute
+  namespace: default
+spec:
+  entryPoints:
+    - web   # 确保 Traefik 配置了 `web` entry point
+  routes:
+    - match: Host(`k3s.local`)  # 使用你自己的域名，或者可以用外部 IP
+      kind: Rule
+      services:
+        - name: nginx-service
+          port: 80
+    - match: Host(`k3s.local`) && PathPrefix(`/n2`)
+      kind: Rule
+      services:
+        - name: nginx-service2
+          port: 80
+
+# test
+# curl -H "Host: k3s.local" publicIP
+# curl -H "Host: k3s.local" 127.0.0.1/n2

@@ -4,17 +4,18 @@ import (
 	"context"
 	"fmt"
 	"githubagent/proto/listwatcher"
+	"net/http"
 	"os"
 
 	"github.com/spf13/cobra"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric/noop"
 
+	genericapiserver "k8s.io/apiserver/pkg/server"
 	"k8s.io/klog/v2"
 
-	genericapiserver "k8s.io/apiserver/pkg/server"
-
 	"githubagent/internal/server"
+	"githubagent/internal/server/register"
 )
 
 func init() {
@@ -34,11 +35,7 @@ func NewCommand() *cobra.Command {
 		DisableFlagParsing: true,
 		SilenceUsage:       true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-
-			// set up signal context for kubelet shutdown
-			ctx := genericapiserver.SetupSignalContext()
-			serverOption := AgentServer{}
-			return Run(ctx, &serverOption)
+			return Run()
 		},
 	}
 
@@ -55,8 +52,11 @@ func NewCommand() *cobra.Command {
 	return cmd
 }
 
-func Run(ctx context.Context, s *AgentServer) error {
+func Run() error {
 	klog.InfoS("Golang settings", "GOGC", os.Getenv("GOGC"), "GOMAXPROCS", os.Getenv("GOMAXPROCS"), "GOTRACEBACK", os.Getenv("GOTRACEBACK"))
+
+	// set up signal context for kubelet shutdown
+	ctx := genericapiserver.SetupSignalContext()
 
 	grpcOptions := GrpcServerOptions{
 		Port:     "50051",
@@ -69,9 +69,41 @@ func Run(ctx context.Context, s *AgentServer) error {
 		}
 	}()
 
-	if err := s.ListenAndServe(ctx); err != nil && ctx.Err() == nil {
+	if err := listenAndServe(ctx); err != nil && ctx.Err() == nil {
 		klog.ErrorS(err, "Failed to run AgentServer")
 	}
 
+	return nil
+}
+
+func listenAndServe(ctx context.Context) error {
+
+	router := register.Router()
+
+	// Create an HTTP server to host the Gin router
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: router,
+	}
+
+	// Use a Goroutine to start the server
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			// Log the error if the server fails
+			fmt.Printf("Server failed: %v\n", err)
+		}
+	}()
+
+	// Wait for context cancellation
+	<-ctx.Done()
+
+	// Shutdown the server gracefully when the context is cancelled
+	fmt.Println("Shutting down server...")
+	if err := server.Shutdown(ctx); err != nil {
+		fmt.Printf("Server shutdown failed: %v\n", err)
+		return err
+	}
+
+	fmt.Println("Server exited gracefully.")
 	return nil
 }

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基于k3s搭建个人混合云数据中心</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            color: black;
+        }
+        header {
+            color: black;
+            padding: 15px;
+            text-align: center;
+        }
+        footer {
+            color: black;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+        nav {
+            width: 250px;
+            float: left;
+            margin-top: 20px;
+            padding: 20px;
+            color: black;
+            height: 100%;
+        }
+        nav a {
+            color: black;
+            text-decoration: none;
+            display: block;
+            padding: 8px 0;
+        }
+        nav a:hover {
+            background-color: #f0f0f0;
+        }
+        main {
+            margin-left: 270px;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: black;
+        }
+        ol {
+            padding-left: 20px;
+        }
+        ol li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header Section -->
+<header>
+    <h1 id="基于k3s搭建个人混合云数据中心高效利用边缘计算与云服务">基于k3s搭建个人混合云数据中心：高效利用边缘计算与云服务</h1>
+</header>
+
+<!-- Left Sidebar (Navigation) -->
+<nav>
+    <h2 id="目录">目录</h2>
+    <ol type="1">
+        <li><a href="#背景与问题">背景与问题</a></li>
+        <li><a href="#实现方案">实现方案</a>
+            <ol type="1">
+                <li><a href="#方案1-集群混合部署公有云计算节点和私有云计算节点混合部署">方案1: 集群混合部署：公有云计算节点和私有云计算节点混合部署</a></li>
+                <li><a href="#方案2-集群部署在私有计算节点上使用公有云节点当作ingress">方案2: 集群部署在私有计算节点上，使用公有云节点当作ingress</a></li>
+            </ol>
+        </li>
+        <li><a href="#测试">测试</a></li>
+    </ol>
+</nav>
+
+<!-- Main Content Section -->
+<main>
+    <h2 id="背景与问题">背景与问题</h2>
+    <p>随着云计算和边缘计算技术的不断发展，个人用户在使用云主机时面临着一个不可忽视的问题：随着计算需求的增加，云主机的费用也随之增长。这对于那些有特定计算需求，但又不希望一直支付高额云费用的个人用户来说，构建一个混合云架构显得尤为重要。</p>
+    <p>在传统的云计算模式下，用户的数据和计算任务会被完全转移到云数据中心，随着计算量和存储需求的增加，云计算的费用也会显著提升。而对于许多家庭用户来说，往往有较强的本地计算能力——例如，个人闲置的家用计算机通常配备了较高的硬件配置（如多核CPU、大量内存和硬盘存储），但是由于这些设备并未得到充分利用，造成了资源的浪费。</p>
+    <p>因此，将边缘计算能力与云服务结合，搭建一个个人混合云数据中心，成为解决这一问题的理想方案。通过这种方式，用户可以充分利用本地计算机的闲置资源，将一些计算密集型任务和存储任务转移到本地边缘节点上，而将需要更高可用性、灵活性或规模的任务交给公有云来处理。</p>
+    <h3 id="这种架构的优势">这种架构的优势：</h3>
+    <ol type="1">
+    <li><strong>降低云计算成本</strong>：通过将部分计算和存储任务转移到本地边缘节点，减少了对云服务的依赖，进而减少了云计算的费用。</li>
+    <li><strong>高效利用闲置资源</strong>：充分利用家用计算机等本地设备的计算和存储能力，避免了硬件资源的浪费。</li>
+    <li><strong>降低网络延迟</strong>：将边缘计算部署在离数据源更近的地方，减少了网络延迟，尤其适用于延迟敏感型应用。</li>
+    <li><strong>灵活性与可扩展性</strong>：通过公有云和本地计算机的结合，用户可以灵活调度和扩展资源，既能保证高效性，也能提供类似公有云的管理体验。</li>
+    </ol>
+    <p>然而，在实现个人混合云数据中心时，仍然面临一些挑战，特别是在网络连接、同步以及资源的调度与管理方面。例如，如何有效地连接本地设备与云服务，保证数据的安全与同步？如何在网络延迟较高的情况下，确保系统稳定运行？</p>
+    <p>因此，搭建一个既能减少云计算成本，又能高效利用本地硬件资源的个人混合云数据中心，变成了一个有意思的事情。</p>
+    <h2 id="实现方案">实现方案</h2>
+    <p>这里我们尝试两种方案 1.
+    集群混合部署：公有云计算节点和私有云计算节点混合部署<br />
+    2. 集群部署在私有计算节点上，使用公有云节点当作ingress</p>
+    <h3 id="方案1-集群混合部署公有云计算节点和私有云计算节点混合部署">方案1:
+    集群混合部署：公有云计算节点和私有云计算节点混合部署</h3>
+    <p>传统的方案通常将私有云和公有云独立架构，然后使用常用中间件来打通数据流和控制流，这种方式往往增加了运维复杂度，尤其是在数据交互和安全管理方面的挑战。特别是在省钱省事的前提下，成为了安全和运维的难点。本文尝试一种新的解决方案：通过K8s实现公有云和私有计算中心的统一，利用K8s的原生能力来解决网络连接、延迟等带来的数据同步，安全运维等问题。这个方案通过横向扩展两个网络，尝试实现更加高效和简化的云数据中心架构，提供了一个实用的实践方向。</p>
+    <figure>
+    <img src="high-level-arch-hybrid-cluster.png" alt="high level arch" />
+    <figcaption aria-hidden="true">high level arch</figcaption>
+    </figure>
+    <h4 id="打通网络">打通网络</h4>
+    <p>第一步应该是打通本地主机到云主机的网络，如上图中虚线所示，我们使用wireguard
+    (被Linus成为“the best VPN protocol”)</p>
+    <ol type="1">
+    <li><p>配置wireguard server，我们标记为A，执行下面脚本 —
+    注意注释掉的部分</p>
+    <details>
+    <div class="sourceCode" id="cb1"><pre
+    class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+    <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># wireguard server A</span></span>
+    <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> /wireguard</span>
+    <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /wireguard</span>
+    <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">wg</span> genkey <span class="kw">|</span> <span class="fu">tee</span> server_A_private_key <span class="kw">|</span> <span class="ex">wg</span> pubkey <span class="op">&gt;</span> server_A_public_key</span>
+    <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">!</span> <span class="ot">-f</span> /wireguard/client_B_public_key <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+    <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;file client public key does not exist&quot;</span></span>
+    <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> 1</span>
+    <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+    <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&lt;&lt;EOF</span> <span class="op">&gt;</span> /wireguard/wg0.conf</span>
+    <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="st">[Interface]</span></span>
+    <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="st">PrivateKey = </span><span class="kw">`</span><span class="fu">cat</span> /wireguard/server_A_private_key<span class="kw">`</span> <span class="st"># private key of server A</span></span>
+    <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="st">Address = 10.4.0.1/24      # virtual server IP of A node</span></span>
+    <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="st">ListenPort = 51820</span></span>
+    <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="st">SaveConfig = true</span></span>
+    <span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="st">[Peer]</span></span>
+    <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="st">PublicKey = </span><span class="kw">`</span><span class="fu">cat</span> /wireguard/client_B_public_key<span class="kw">`</span></span>
+    <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="st">AllowedIPs = 10.4.0.2/32   # virtual IP of B node</span></span>
+    <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span>
+    <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> /wireguard/wg0.conf /etc/wireguard/wg0.conf</span>
+    <span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> wg-quick up wg0</span>
+    <span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="co">#sudo systemctl enable wg-quick@wg0</span></span>
+    <span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="co">#sudo ufw allow 51820/udp</span></span>
+    <span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="co">#sudo ufw enable</span></span>
+    <span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="co">#希望 B 设备通过 A 访问 Internet 或其他网络资源，你需要在 A 上配置 IP 转发</span></span>
+    <span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="co"># 启用 IP 转发</span></span>
+    <span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="co">#echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward</span></span>
+    <span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="co"># 修改 sysctl 配置以保持设置</span></span>
+    <span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="co">#sudo sysctl -w net.ipv4.ip_forward=1</span></span>
+    <span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="co">#sudo sysctl -p</span></span>
+    <span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+    <span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="co">#sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE</span></span>
+    <span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="co">#sudo iptables-save</span></span></code></pre></div>
+    </details></li>
+    <li><p>配置peer client
+    节点，我们标记为B（同理可以创建C节点），执行下面脚本 —
+    注意注释掉的部分</p>
+    <details>
+    <div class="sourceCode" id="cb2"><pre
+    class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+    <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># wireguard client B</span></span>
+    <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> /wireguard</span>
+    <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /wireguard</span>
+    <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">wg</span> genkey <span class="kw">|</span> <span class="fu">tee</span> client_B_private_key <span class="kw">|</span> <span class="ex">wg</span> pubkey <span class="op">&gt;</span> client_B_public_key</span>
+    <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">!</span> <span class="ot">-f</span> /wireguard/server_A_public_key <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+    <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;file server public key does not exist&quot;</span></span>
+    <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> 1</span>
+    <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+    <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&lt;&lt;EOF</span> <span class="op">&gt;</span> /etc/wireguard/wg0.conf</span>
+    <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="st">[Interface]</span></span>
+    <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="st">PrivateKey = </span><span class="kw">`</span><span class="fu">cat</span> /wireguard/client_B_private_key<span class="kw">`</span> <span class="st"># private key of B</span></span>
+    <span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="st">Address = 10.4.0.2/32      # virtual server IP of B</span></span>
+    <span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="st">[Peer]</span></span>
+    <span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="st">PublicKey = </span><span class="kw">`</span><span class="fu">cat</span> /wireguard/server_A_public_key<span class="kw">`</span></span>
+    <span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="st">Endpoint = 74.121.149.207:51820 # public IP and listening port</span></span>
+    <span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="st">AllowedIPs = 10.4.0.0/24   # virtual IP of B node</span></span>
+    <span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="st">PersistentKeepalive = 25</span></span>
+    <span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span>
+    <span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> /wireguard/wg0.conf /etc/wireguard/wg0.conf</span>
+    <span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> wg-quick up wg0</span>
+    <span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co">#sudo systemctl enable wg-quick@wg0 # start on system on</span></span></code></pre></div>
+    </details></li>
+    <li><p>测试链接，ping 成功搞定</p>
+    <div class="sourceCode" id="cb3"><pre
+    class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ping</span> 10.4.0.1</span>
+    <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">PING</span> 10.4.0.1 <span class="er">(</span><span class="ex">10.4.0.1</span><span class="kw">)</span><span class="bu">:</span> 56 data bytes</span>
+    <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">64</span> bytes from 10.4.0.1: icmp_seq=0 ttl=64 time=300.125 ms</span>
+    <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">64</span> bytes from 10.4.0.1: icmp_seq=1 ttl=64 time=320.622 ms</span></code></pre></div></li>
+    </ol>
+    <h4 id="搭建k3s-control-plane-on-cloud">搭建k3s control plane on
+    cloud</h4>
+    <p>登录到A节点，启动controlplane</p>
+    <div class="sourceCode" id="cb4"><pre
+    class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-sfL</span> https://get.k3s.io <span class="kw">|</span> <span class="fu">sh</span> <span class="at">-</span></span></code></pre></div>
+    <p>根据个人环境优化参数，如·网络丢包率为 12%，延时约
+    250ms·，建议优化启动参数. 也可以使用默认参数，目前默认行为k3s 1.
+    启动sqlite存储<br />
+    2. Kubelet默认同步node节点数据频率为1分钟一次 3. 默认API Server
+    等待状态更新的最大容忍时间为5m</p>
+    <pre class="/etc/systemd/system/k3s.service"><code>ExecStart=/usr/local/bin/k3s server --tls-san axpz.local
+
+    ...
+
+    --kubelet-arg=--node-status-update-frequency=60s
+    --kubelet-arg=--node-status-update-grace-period=5m</code></pre>
+    <pre><code>sudo systemctl daemon-reload
+    sudo systemctl restart k3s</code></pre>
+    <p>查看日志</p>
+    <details>
+    <div class="sourceCode" id="cb7"><pre
+    class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 使用以下命令来过滤 K3s 日志中的 Node Token 和 TLS-SAN 信息</span></span>
+    <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># journalctl -u k3s | grep &#39;node token\|tls-san&#39;</span></span>
+    <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+    <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Jan</span> 07 15:30:36 calm-baud-1.localdomain k3s<span class="pp">[</span><span class="ss">3094620</span><span class="pp">]</span>: time=<span class="st">&quot;2025-01-07T15:30:36Z&quot;</span> level=info msg=<span class="st">&quot;Server node token is available at /var/lib/rancher/k3s/server/token&quot;</span></span>
+    <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="ex">Jan</span> 07 15:30:36 calm-baud-1.localdomain k3s<span class="pp">[</span><span class="ss">3094620</span><span class="pp">]</span>: time=<span class="st">&quot;2025-01-07T15:30:36Z&quot;</span> level=info msg=<span class="st">&quot;Agent node token is available at /var/lib/rancher/k3s/server/agent-token&quot;</span></span>
+    <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="ex">Jan</span> 07 15:30:47 calm-baud-1.localdomain k3s<span class="pp">[</span><span class="ss">3094779</span><span class="pp">]</span>: time=<span class="st">&quot;2025-01-07T15:30:47Z&quot;</span> level=info msg=<span class="st">&quot;Server node token is available at /var/lib/rancher/k3s/server/token&quot;</span></span>
+    <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="ex">Jan</span> 07 15:30:47 calm-baud-1.localdomain k3s<span class="pp">[</span><span class="ss">3094779</span><span class="pp">]</span>: time=<span class="st">&quot;2025-01-07T15:30:47Z&quot;</span> level=info msg=<span class="st">&quot;Agent node token is available at /var/lib/rancher/k3s/server/agent-token&quot;</span></span>
+    <span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="ex">Jan</span> 07 15:30:54 calm-baud-1.localdomain k3s<span class="pp">[</span><span class="ss">3094779</span><span class="pp">]</span>: I0107 15:30:54.121292 3094779 kube.go:636] List of node<span class="er">(</span><span class="ex">calm-baud-1.localdomain</span><span class="kw">)</span> <span class="ex">annotations:</span> map<span class="pp">[</span><span class="ss">string</span><span class="pp">]</span>string{<span class="st">&quot;alpha.kubernetes.io/provided-node-ip&quot;</span>:<span class="st">&quot;74.121.149.207&quot;</span>, <span class="st">&quot;flannel.alpha.coreos.com/backend-data&quot;</span>:<span class="st">&quot;{</span><span class="dt">\&quot;</span><span class="st">VNI</span><span class="dt">\&quot;</span><span class="st">:1,</span><span class="dt">\&quot;</span><span class="st">VtepMAC</span><span class="dt">\&quot;</span><span class="st">:</span><span class="dt">\&quot;</span><span class="st">3e:a5:8d:f1:50:b4</span><span class="dt">\&quot;</span><span class="st">}&quot;</span>, <span class="st">&quot;flannel.alpha.coreos.com/backend-type&quot;</span>:<span class="st">&quot;vxlan&quot;</span>, <span class="st">&quot;flannel.alpha.coreos.com/kube-subnet-manager&quot;</span>:<span class="st">&quot;true&quot;</span>, <span class="st">&quot;flannel.alpha.coreos.com/public-ip&quot;</span>:<span class="st">&quot;74.121.149.207&quot;</span>, <span class="st">&quot;k3s.io/hostname&quot;</span>:<span class="st">&quot;calm-baud-1.localdomain&quot;</span>, <span class="st">&quot;k3s.io/internal-ip&quot;</span>:<span class="st">&quot;74.121.149.207&quot;</span>, <span class="st">&quot;k3s.io/node-args&quot;</span>:<span class="st">&quot;[</span><span class="dt">\&quot;</span><span class="st">server</span><span class="dt">\&quot;</span><span class="st">,</span><span class="dt">\&quot;</span><span class="st">--tls-san</span><span class="dt">\&quot;</span><span class="st">,</span><span class="dt">\&quot;</span><span class="st">axpz.local</span><span class="dt">\&quot;</span><span class="st">]&quot;</span>, <span class="st">&quot;k3s.io/node-config-hash&quot;</span>:<span class="st">&quot;EW5CHGDY6WQFH5IMOMMGEEEOFXADTGZZPMW5RZGHVQBJ3QHTZUHA====&quot;</span>, <span class="st">&quot;k3s.io/node-env&quot;</span>:<span class="st">&quot;{}&quot;</span>, <span class="st">&quot;node.alpha.kubernetes.io/ttl&quot;</span>:<span class="st">&quot;0&quot;</span>, <span class="st">&quot;volumes.kubernetes.io/controller-managed-attach-detach&quot;</span>:<span class="st">&quot;true&quot;</span>}</span></code></pre></div>
+    </details>
+    <h4 id="启动traefik-dashboard">启动traefik dashboard</h4>
+    <p>edit /var/lib/rancher/k3s/server/manifests/traefik.yaml with</p>
+    <pre><code>apiVersion: helm.cattle.io/v1
+    kind: HelmChart
+    metadata:
+    name: traefik
+    namespace: kube-system
+    spec:
+    chart: https://%{KUBERNETES_API}%/static/charts/traefik-27.0.201+up27.0.2.tgz
+    set:
+        global.systemDefaultRegistry: &quot;&quot;
+        dashboard.enabled: &quot;true&quot;               &lt;&lt;&lt;
+        dashboard.domain: &quot;traefik.internal&quot;    &lt;&lt;&lt;</code></pre>
+    <p>kubectl apply -f
+    /var/lib/rancher/k3s/server/manifests/traefik.yaml</p>
+    <h4 id="搭建k3s-worker-on-macos">搭建k3s worker on
+    <code>macOS</code></h4>
+    <p>首先启动一个轻量级虚拟机</p>
+    <div class="sourceCode" id="cb9"><pre
+    class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">multipass</span> launch <span class="at">--name</span> k3s-worker <span class="at">--memory</span> 4G <span class="at">--disk</span> 40G <span class="at">--mount</span> ~/go/src/github.com:/mnt/github.com</span>
+    <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">multipass</span> shell k3s-worker</span>
+    <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-sfL</span> https://get.k3s.io <span class="kw">|</span> <span class="va">K3S_URL</span><span class="op">=</span>https://axpz.local:6443 <span class="va">K3S_TOKEN</span><span class="op">=</span>K10...d0eb56c9 <span class="fu">sh</span> <span class="at">-</span></span></code></pre></div>
+    <h4 id="系统搭建完成注意下面几点">系统搭建完成，注意下面几点</h4>
+    <ol type="1">
+    <li>云主机的公网IP会自动被treafik的serviceLB创建为LoadBalancer
+    IP，即默认的ingress，你可以通过配置ingressRoute自动分流到到不同的微服务中。</li>
+    <li>如果各个节点硬件的architecture不一样，需要注意kubernetes的image兼容性问题，比如controlplane是x86-64,
+    而工作节点是arm64，可能需要额外的工作。</li>
+    <li>优化：
+    <ul>
+    <li>优化启动参数：比如上面提到的网络丢包率为 12%，延时约
+    250ms，需要优化数据同步频率，以及存储等,
+    比如：<code>ExecStart=/usr/local/bin/k3s server --tls-san axpz.local --flannel-backend=none --disable-network-policy --no-deploy local-storage --no-deploy traefik</code></li>
+    <li>减少主节点资源消耗：给主节点打污点
+    <code>kubectl taint nodes calm-baud-1.localdomain node-role.kubernetes.io/master:NoSchedule</code></li>
+    <li>网络优化，如果作为生产级应用，建议搭建网络专线</li>
+    <li>其他…</li>
+    </ul></li>
+    </ol>
+    <h3 id="方案2-集群部署在私有计算节点上使用公有云节点当作ingress">方案2:
+    集群部署在私有计算节点上，使用公有云节点当作ingress</h3>
+    <figure>
+    <img src="high-level-arch-private-cluster.png" alt="high level arch" />
+    <figcaption aria-hidden="true">high level arch</figcaption>
+    </figure>
+    <h4 id="打通网络搭建集群">打通网络、搭建集群</h4>
+    <p>参考方案1</p>
+    <h4 id="配置集群负载均衡为wg0">配置集群负载均衡为wg0</h4>
+    <p>k3s 使用serviceLB来提供负载均衡服务，当有external-ip
+    时，serviceLB会自动使用其作为负载均衡，当没有的时候会自动使用internal
+    ip作为负载均衡，由于我们配置了vpn连通外网，所以我们配置wg0作为外网ip，具体配置添加启动参数
+    –node-external-ip 10.4.0.3
+    所以启动service变为ExecStart=/usr/local/bin/k3s server –node-external-ip
+    10.4.0.3</p>
+    <div class="sourceCode" id="cb10"><pre
+    class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">systemctl</span> daemon-reload</span>
+    <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">systemctl</span> stop k3s</span>
+    <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ex">systemctl</span> start k3s</span></code></pre></div>
+    <h2 id="测试">测试</h2>
+    <ol type="1">
+    <li>创建nginx应用
+    <details>
+    <div class="sourceCode" id="cb11"><pre
+    class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apiVersion</span><span class="kw">:</span><span class="at"> apps/v1 </span></span>
+    <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">kind</span><span class="kw">:</span><span class="at"> Deployment </span></span>
+    <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">metadata</span><span class="kw">:</span></span>
+    <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> nginx-deployment</span></span>
+    <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">namespace</span><span class="kw">:</span><span class="at"> default</span></span>
+    <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="fu">spec</span><span class="kw">:</span></span>
+    <span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="fu">replicas</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+    <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="fu">selector</span><span class="kw">:</span></span>
+    <span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">matchLabels</span><span class="kw">:</span></span>
+    <span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">app</span><span class="kw">:</span><span class="at"> nginx</span></span>
+    <span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="fu">template</span><span class="kw">:</span></span>
+    <span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">metadata</span><span class="kw">:</span></span>
+    <span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">labels</span><span class="kw">:</span></span>
+    <span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">app</span><span class="kw">:</span><span class="at"> nginx</span></span>
+    <span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">spec</span><span class="kw">:</span></span>
+    <span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">containers</span><span class="kw">:</span></span>
+    <span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> nginx</span></span>
+    <span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">image</span><span class="kw">:</span><span class="at"> nginx:latest</span></span>
+    <span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">ports</span><span class="kw">:</span></span>
+    <span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> </span><span class="fu">containerPort</span><span class="kw">:</span><span class="at"> </span><span class="dv">80</span></span>
+    <span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+    <span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a><span class="fu">apiVersion</span><span class="kw">:</span><span class="at"> apps/v1</span></span>
+    <span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a><span class="fu">kind</span><span class="kw">:</span><span class="at"> Deployment</span></span>
+    <span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a><span class="fu">metadata</span><span class="kw">:</span></span>
+    <span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> nginx-deployment2</span></span>
+    <span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a><span class="fu">namespace</span><span class="kw">:</span><span class="at"> default</span></span>
+    <span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a><span class="fu">spec</span><span class="kw">:</span></span>
+    <span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a><span class="fu">replicas</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+    <span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a><span class="fu">selector</span><span class="kw">:</span></span>
+    <span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">matchLabels</span><span class="kw">:</span></span>
+    <span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">app</span><span class="kw">:</span><span class="at"> nginx2</span></span>
+    <span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a><span class="fu">template</span><span class="kw">:</span></span>
+    <span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">metadata</span><span class="kw">:</span></span>
+    <span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">labels</span><span class="kw">:</span></span>
+    <span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">app</span><span class="kw">:</span><span class="at"> nginx2</span></span>
+    <span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">spec</span><span class="kw">:</span></span>
+    <span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">containers</span><span class="kw">:</span></span>
+    <span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> nginx</span></span>
+    <span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">image</span><span class="kw">:</span><span class="at"> nginx:latest</span></span>
+    <span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">ports</span><span class="kw">:</span></span>
+    <span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> </span><span class="fu">containerPort</span><span class="kw">:</span><span class="at"> </span><span class="dv">80</span></span></code></pre></div>
+    </details></li>
+    <li>暴露服务
+    <details>
+    <div class="sourceCode" id="cb12"><pre
+    class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apiVersion</span><span class="kw">:</span><span class="at"> v1</span></span>
+    <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">kind</span><span class="kw">:</span><span class="at"> Service</span></span>
+    <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">metadata</span><span class="kw">:</span></span>
+    <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> nginx-service</span></span>
+    <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">namespace</span><span class="kw">:</span><span class="at"> default</span></span>
+    <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="fu">spec</span><span class="kw">:</span></span>
+    <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="fu">selector</span><span class="kw">:</span></span>
+    <span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">app</span><span class="kw">:</span><span class="at"> nginx</span></span>
+    <span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ports</span><span class="kw">:</span></span>
+    <span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">protocol</span><span class="kw">:</span><span class="at"> TCP</span></span>
+    <span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">80</span></span>
+    <span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">targetPort</span><span class="kw">:</span><span class="at"> </span><span class="dv">80</span></span>
+    <span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 这个服务类型可以改成 ClusterIP 或者 NodePort</span></span>
+    <span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="fu">type</span><span class="kw">:</span><span class="at"> ClusterIP</span></span></code></pre></div>
+    </details></li>
+    <li>配置IngressRoute
+    <details>
+    <div class="sourceCode" id="cb13"><pre
+    class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apiVersion</span><span class="kw">:</span><span class="at"> traefik.containo.us/v1alpha1</span></span>
+    <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">kind</span><span class="kw">:</span><span class="at"> IngressRoute</span></span>
+    <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">metadata</span><span class="kw">:</span></span>
+    <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> nginx-ingressroute</span></span>
+    <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">namespace</span><span class="kw">:</span><span class="at"> default</span></span>
+    <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="fu">spec</span><span class="kw">:</span></span>
+    <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="fu">entryPoints</span><span class="kw">:</span></span>
+    <span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> web</span><span class="co">   # 确保 Traefik 配置了 `web` entry point</span></span>
+    <span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="fu">routes</span><span class="kw">:</span></span>
+    <span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">match</span><span class="kw">:</span><span class="at"> Host(`k3s.local`)</span><span class="co">  # 使用你自己的域名，或者可以用外部 IP</span></span>
+    <span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> Rule</span></span>
+    <span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">services</span><span class="kw">:</span></span>
+    <span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> nginx-service</span></span>
+    <span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">80</span></span>
+    <span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">match</span><span class="kw">:</span><span class="at"> Host(`k3s.local`) &amp;&amp; PathPrefix(`/n2`)</span></span>
+    <span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> Rule</span></span>
+    <span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">services</span><span class="kw">:</span></span>
+    <span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> nginx-service2</span></span>
+    <span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">80</span></span></code></pre></div>
+    </details></li>
+    </ol>
+    <p>从互联网访问，…, 搞定, scale up/down pod， … 搞定</p>
+</main>
+
+<!-- Footer Section -->
+<footer>
+    <p>&copy; 2025 基于k3s搭建个人混合云数据中心项目</p>
+</footer>
+
+</body>
+</html>

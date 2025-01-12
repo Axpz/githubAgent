@@ -1,17 +1,25 @@
 package handlers
 
-import "github.com/gin-gonic/gin"
+import (
+	"githubagent/internal/server/register"
 
-func HealthCheckRegister(r *gin.Engine) {
-	r.GET("/healthz", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "health",
+	"github.com/gin-gonic/gin"
+)
+
+func init() {
+	register.Register("GET /healthz", func(r *gin.Engine) {
+		r.GET("/healthz", func(c *gin.Context) {
+			c.JSON(200, gin.H{
+				"message": "health",
+			})
 		})
 	})
 
-	r.GET("/ready", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "ready",
+	register.Register("GET /ready", func(r *gin.Engine) {
+		r.GET("/ready", func(c *gin.Context) {
+			c.JSON(200, gin.H{
+				"message": "ready",
+			})
 		})
 	})
 }

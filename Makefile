@@ -10,6 +10,9 @@ OUTPUT_SVR_FILE := $(OUTPUT_DIR)/$(APP_SVR_NAME)
 OUTPUT_AGENT_FILE := $(OUTPUT_DIR)/$(APP_AGENT_NAME)
 GO := go
 
+VERSION := v0.0.1
+IMAGE_NAME := github-agent-server
+
 # Default target
 .PHONY: all
 all: lint build
@@ -38,6 +41,11 @@ build:
 	@echo "Building $(SRC_AGENT_FILE)..."
 	$(GO) build -o $(OUTPUT_AGENT_FILE) $(SRC_AGENT_FILE)
 	@echo "Build complete: $(OUTPUT_AGENT_FILE)"
+
+.PHONE: docker
+docker:
+	docker build -t $(IMAGE_NAME):$(VERSION) .
+	docker save -o $(IMAGE_NAME):$(VERSION).linux-arm64.tar $(IMAGE_NAME):$(VERSION)
 
 # Run the Go application
 .PHONY: run
