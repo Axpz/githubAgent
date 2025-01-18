@@ -15,6 +15,8 @@ import (
 	"k8s.io/klog/v2"
 
 	"githubagent/internal/server"
+	_ "githubagent/internal/server/handlers"
+	_ "githubagent/internal/server/handlers/github"
 	"githubagent/internal/server/register"
 )
 

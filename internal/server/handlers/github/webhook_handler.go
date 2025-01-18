@@ -12,6 +12,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"k8s.io/klog/v2"
+
+	"githubagent/internal/server/handlers/github/jobs"
 )
 
 // GitHub Secret
@@ -30,9 +32,14 @@ type PullRequestEvent struct {
 
 // PushEvent 定义了 GitHub webhook 的 payload 中与 Push 相关的数据结构
 type PushEvent struct {
-	Ref     string `json:"ref"`
-	Before  string `json:"before"`
-	After   string `json:"after"`
+	Ref        string `json:"ref"`
+	Before     string `json:"before"`
+	After      string `json:"after"`
+	Repository struct {
+		Name     string `json:"name"`
+		ID       int    `json:"id"`
+		FullName string `json:"full_name"`
+	} `json:"repository"`
 	Commits []struct {
 		ID      string `json:"id"`
 		Message string `json:"message"`
@@ -65,16 +72,18 @@ func verifySignature(r *gin.Context) bool {
 }
 
 // 处理 pull_request 事件
-func handlePullRequestEvent(prEvent PullRequestEvent) {
+func handlePullRequestEvent(prEvent PullRequestEvent) error {
 	// 如果 PR 被合并并且目标分支是 main
 	if prEvent.Action == "closed" && prEvent.PullRequest.Merged && prEvent.PullRequest.Base.Ref == "main" {
 		fmt.Println("PR has been merged into the main branch!")
 		// 这里可以添加你想要执行的操作
 	}
+
+	return jobs.NewJobBuilder().Complete()
 }
 
 // 处理 push 事件
-func handlePushEvent(pushEvent PushEvent) {
+func handlePushEvent(pushEvent PushEvent) error {
 	// 检查推送是否到主分支
 	if pushEvent.Ref == "refs/heads/main" {
 		// 如果是强制推送，before 和 after 提交哈希可能会有所不同
@@ -88,25 +97,26 @@ func handlePushEvent(pushEvent PushEvent) {
 			fmt.Printf("Commit Message: %s\n", commit.Message)
 		}
 	}
+
+	return jobs.NewJobBuilder().Complete(pushEvent.Repository.FullName)
 }
 
 // GitHub Webhook handler
 func webhookHandler(c *gin.Context) {
-	// 创建日志记录
-	klog.InitFlags(nil)
-	defer klog.Flush()
 
 	// 验证 GitHub 请求的签名
-	if !verifySignature(c) {
-		klog.Warningf("Invalid GitHub signature. Event: github, Status: unauthorized")
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	// if !verifySignature(c) {
+	// 	klog.Warningf("Invalid GitHub signature. Event: github, Status: unauthorized")
+	// 	c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+	// 	return
+	// }
 
 	// 解析 GitHub 发送的 JSON 数据
 	eventType := c.GetHeader("X-GitHub-Event")
 
 	klog.Infof("Received GitHub event: %s, Content-Length: %d", eventType, c.Request.ContentLength)
+
+	var err error
 
 	switch eventType {
 	case "push":
@@ -116,7 +126,7 @@ func webhookHandler(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid payload"})
 			return
 		}
-		handlePushEvent(pushEvent)
+		err = handlePushEvent(pushEvent)
 
 	case "pull_request":
 		var prEvent PullRequestEvent
@@ -125,7 +135,7 @@ func webhookHandler(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid payload"})
 			return
 		}
-		handlePullRequestEvent(prEvent)
+		err = handlePullRequestEvent(prEvent)
 
 	default:
 		klog.Warningf("Unhandled GitHub event: %s", eventType)
@@ -133,7 +143,13 @@ func webhookHandler(c *gin.Context) {
 		return
 	}
 
+	if err != nil {
+		klog.Errorf("Error processing GitHub event: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
 	// 返回成功响应
 	klog.Infof("Webhook successfully received and processed")
-	c.JSON(http.StatusOK, gin.H{"message": "Webhook received"})
+	c.JSON(http.StatusOK, gin.H{"message": "Webhook received and processed"})
 }

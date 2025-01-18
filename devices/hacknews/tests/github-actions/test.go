@@ -92,10 +92,6 @@ func handlePushEvent(pushEvent PushEvent) {
 
 // GitHub Webhook handler
 func githubWebhookHandler(c *gin.Context) {
-	// 创建日志记录
-	klog.InitFlags(nil)
-	defer klog.Flush()
-
 	// 验证 GitHub 请求的签名
 	if !verifySignature(c) {
 		klog.Warningf("Invalid GitHub signature. Event: github, Status: unauthorized")
