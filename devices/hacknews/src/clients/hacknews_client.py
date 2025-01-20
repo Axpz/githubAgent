@@ -13,7 +13,8 @@ class HackerNewsClient:
     
     def __init__(self):
         # Base URL for Hacker News
-        self.url = 'https://news.ycombinator.com/'
+        # self.url = 'https://news.ycombinator.com/'
+        self.url = 'https://10.4.0.1/hacknews'
 
     def fetch_top_stories(self):
         """
@@ -24,7 +25,7 @@ class HackerNewsClient:
         """
         logger.debug("Fetching top stories from Hacker News.")
         try:
-            response = requests.get(self.url, timeout=30)
+            response = requests.get(self.url, timeout=60, verify=False)
 
             # Check if the response status code is successful
             response.raise_for_status()  

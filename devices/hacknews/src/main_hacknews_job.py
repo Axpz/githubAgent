@@ -27,7 +27,10 @@ def main():
 
     markdown_file_path = hacknews_client.export_top_stories()
     report, _ = reporter.generate_report(markdown_file_path)
-    notifier.notify(report, datetime.now().strftime('%Y-%m-%d'))
+    if 0 <= datetime.now().hour < 24:
+        notifier.notify(report, datetime.now().strftime('%Y-%m-%d'))
+        LOG.info(f"[send email]")
+
     LOG.info(f"[定时任务执行完毕]")
 
 

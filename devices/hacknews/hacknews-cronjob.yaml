@@ -2,17 +2,42 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: hacknews-cronjob
+  labels:
+    app: hacknews
 spec:
-  schedule: "0 6,12,20 * * *"
+  schedule: "0 6,12,20 * * *"  # 每天 6 点、12 点和 20 点运行
+  concurrencyPolicy: Forbid  # 禁止并发运行
+  successfulJobsHistoryLimit: 3  # 保存最近 3 次成功 Job 的记录
+  failedJobsHistoryLimit: 1  # 保存最近 1 次失败 Job 的记录
   jobTemplate:
     spec:
       template:
         spec:
           containers:
-          - name: hacknews-cronjob
-            image: hacknews:v0.0.1
-            command: ["python", "/app/main_hacknews_job.py"]  # 如果你有不同的命令，可以调整这里
-            envFrom:
-            - configMapRef:
-                name: github-agent-config
-          restartPolicy: OnFailure
+            - name: hacknews-cronjob
+              image: hacknews:v0.0.1
+              command: ["/bin/bash", "/app/start.sh"]  # 调用入口脚本
+              envFrom:
+                - configMapRef:
+                    name: github-agent-config  # 从 ConfigMap 加载环境变量
+              env:
+                - name: GIT_SSH_COMMAND
+                  value: "ssh -o StrictHostKeyChecking=no"
+              volumeMounts:
+                - name: github-ssh-keys
+                  mountPath: /root/.ssh  # 挂载 SSH 密钥到指定路径
+                  readOnly: true
+              resources:  # 配置资源限制
+                requests:
+                  memory: "128Mi"
+                  cpu: "100m"
+                limits:
+                  memory: "256Mi"
+                  cpu: "500m"
+          restartPolicy: OnFailure  # 失败时重试
+          activeDeadlineSeconds: 3600  # 限制任务最长运行时间为 1 小时
+          volumes:
+            - name: github-ssh-keys
+              secret:
+                secretName: github-ssh-key-secret  # 必须事先创建此 Secret
+                defaultMode: 0600  # 设置权限，保护 SSH 私钥

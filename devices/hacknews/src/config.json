@@ -7,9 +7,8 @@
             "from": "116586276@qq.com",
             "password_env": "SMTP_AUTH_CODE_QQ",
             "to": [
-                "116586276@qq.com",
                 "924860626@qq.com",
-                "axpzhang@gmail.com"
+                "116586276@qq.com"
             ]
         },
         "qq-email": {

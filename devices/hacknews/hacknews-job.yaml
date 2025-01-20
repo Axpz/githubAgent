@@ -6,10 +6,24 @@ spec:
   template:
     spec:
       containers:
-      - name: hacknews-job
-        image: hacknews:v0.0.1
-        command: ["python", "/app/main_hacknews_job.py"]
-        envFrom:
-        - configMapRef:
-            name: github-agent-config
-      restartPolicy: OnFailure
+        - name: hacknews-job
+          image: hacknews:v0.0.1
+          command:
+            - "/bin/bash"
+            - "/app/start.sh"
+          envFrom:
+            - configMapRef:
+                name: github-agent-config
+          env:
+            - name: GIT_SSH_COMMAND
+              value: "ssh -o StrictHostKeyChecking=no"
+          volumeMounts:
+            - name: github-ssh-keys
+              mountPath: /root/.ssh
+              readOnly: true
+      restartPolicy: Never
+      volumes:
+        - name: github-ssh-keys
+          secret:
+            secretName: github-ssh-key-secret # 请确保预先创建了此 Secret
+            defaultMode: 0600

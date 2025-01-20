@@ -45,30 +45,13 @@ class Notifier:
         html_report = markdown2.markdown(report)
         msg.attach(MIMEText(html_report, 'html', 'utf-8'))
 
-        context = ssl.create_default_context()
         try:
-            with smtplib.SMTP_SSL(self.email_settings['smtp_server'], self.email_settings['smtp_port'], context=context) as server:
+            with smtplib.SMTP_SSL(self.email_settings['smtp_server'], self.email_settings['smtp_port']) as server:
                 LOG.debug("登录SMTP服务器")
-                # 登录SMTP服务器
-                # server.set_debuglevel(2)
-                # server.ehlo()
-                # server.starttls()
-
                 server.login(msg['From'], self.email_settings['password'])
-                # 发送邮件
-                
-                # server.sendmail(msg['From'], receivers, msg.as_string())
+                server.sendmail(msg['From'], receivers, msg.as_string())
+                server.quit()
                 LOG.info("send email to %s", receivers)
-                for receiver in receivers:
-                    try:
-                        msg['To'] = receiver
-                        server.sendmail(msg['From'], receiver, msg.as_string())
-                        LOG.info("send email to %s", receiver)
-                    except Exception as e:
-                        LOG.error(f"SMTP error occurred: {e}")
         except Exception as e:
             LOG.error(f"Unexpected error occurred: {e}")
-
-
-
 
