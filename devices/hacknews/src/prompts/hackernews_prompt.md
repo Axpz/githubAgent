@@ -5,7 +5,15 @@
 2.使用中文生成报告，内容仅包含10个热点话题，并保留原始链接。
 
 格式：
-# Hacker News 热门话题 {日期} {小时}
+---
+layout: home
+title: "Hacker News 热门话题 top 10 {%Y-%m-%d}"
+date: {%Y-%m-%d} {%H:%M:%S} +0800
+lastupdated: {%Y-%m-%d} {%H:%M:%S} +0800
+categories: hacknews
+tags: [news,tech]
+---
+Hacker News 热门话题 {%Y-%m-%d} {%H:%M:%S}
 
 1. **Rust 编程语言的讨论**：关于 Rust 的多个讨论，尤其是关于小字符串处理和安全垃圾回收技术的文章，显示出 Rust 语言在现代编程中的应用迅速增长，开发者对其性能和安全特性的兴趣不断上升。
     - https://fasterthanli.me/articles/small-strings-in-rust

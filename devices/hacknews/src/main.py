@@ -17,8 +17,8 @@ from config import Config
 from scheduler import Scheduler
 from clients.github_client import GitHubClient
 from clients.hacknews_client import HackerNewsClient
-from notifier import Notifier
-from report_generator import ReportGenerator
+from devices.hacknews.src.notifiers.basenotifier import Notifier
+from devices.hacknews.src.report_generator.report_generator import ReportGenerator
 from llm import LLM
 from subscription_manager import SubscriptionManager
 from command_handler import CommandHandler

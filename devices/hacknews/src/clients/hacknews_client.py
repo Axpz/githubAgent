@@ -66,7 +66,7 @@ class HackerNewsClient:
 
         Args:
             date (str, optional): The date in 'YYYY-MM-DD' format. Defaults to today's date.
-            hour (str, optional): The hour in 'HH' format. Defaults to the current hour.
+            hour (str, optional): The hour in 'HH:MM:SS' format. Defaults to the current hour.
 
         Returns:
             str: The path of the generated markdown file, or None if no stories were found.
@@ -80,16 +80,16 @@ class HackerNewsClient:
 
         # Use the current date and time if not provided
         date = date or datetime.now().strftime('%Y-%m-%d')
-        hour = hour or datetime.now().strftime('%H')
+        hour = hour or datetime.now().strftime('%H:%M:%S')
 
         # Prepare the directory and file paths
-        dir_path = os.path.join('reports/hacker_news', date)
+        dir_path = 'reports'
         os.makedirs(dir_path, exist_ok=True)
-        file_path = os.path.join(dir_path, f'{hour}.md')
+        file_path = os.path.join(dir_path, f'{date}-{hour}-hackernews.md')
 
         # Write stories to the markdown file
         with open(file_path, 'w') as file:
-            file.write(f"# Hacker News Top Stories ({date} {hour}:00)\n\n")
+            file.write(f"# Hacker News Top Stories ({date} {hour})\n\n")
             for idx, story in enumerate(top_stories, start=1):
                 file.write(f"{idx}. [{story['title']}]({story['link']})\n")
 

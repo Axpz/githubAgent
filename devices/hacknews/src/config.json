@@ -6,7 +6,7 @@
             "smtp_port": 465,
             "from": "116586276@qq.com",
             "password_env": "SMTP_AUTH_CODE_QQ",
-            "to": "116586276@qq.com"
+            "to": "924860626@qq.com;116586276@qq.com"
         },
         "qq-email": {
             "smtp_server": "smtp.qq.com",
