@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hacknews-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: hacknews-job
+        image: hacknews:v0.0.1
+        command: ["python", "/app/main_hacknews_job.py"]
+        envFrom:
+        - configMapRef:
+            name: github-agent-config
+      restartPolicy: OnFailure

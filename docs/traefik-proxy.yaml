@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hacknews-service
+  namespace: default
+spec:
+  type: ExternalName
+  externalName: news.ycombinator.com
+  ports:
+    - port: 443
+      targetPort: 443
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: hacknews-strip-prefix
+  namespace: default
+spec:
+  stripPrefix:
+    prefixes:
+      - "/hacknews"
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: hacknews-proxy # proxy to external service
+  namespace: default
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: "PathPrefix(`/hacknews`)"
+      kind: Rule
+      middlewares:
+        - name: hacknews-strip-prefix
+      services:
+        - name: hacknews-service
+          port: 443
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: github-service
+  namespace: default
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ExternalName
+  externalName: "10.4.0.3" # Directly using the backend Pod's IP address
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: github-proxy # proxy to backend service
+  namespace: default
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathPrefix(`/github/webhook`)  # 根据 GitHub webhook 的域名和路径进行路由
+      kind: Rule
+      services:
+        - name: github-service  # 使用一个服务名称，你可以创建一个名为 service 的服务，或者直接使用 IP 地址
+          port: 80
+

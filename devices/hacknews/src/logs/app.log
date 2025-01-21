@@ -128,3 +128,90 @@
 2025-01-20 14:02:29 | INFO | hacknews_client:parse_stories:60 - Successfully parsed 30 stories.
 2025-01-20 14:02:29 | INFO | hacknews_client:export_top_stories:96 - Top stories exported to: reports/2025-01-20-14:02:29-hackernews.md
 2025-01-20 14:02:55 | INFO | main_hacknews_job:main:31 - [定时任务执行完毕]
+2025-01-20 23:35:28 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-20 23:35:28 | DEBUG | hacknews_client:export_top_stories:74 - Exporting top stories to a markdown file.
+2025-01-20 23:35:28 | DEBUG | hacknews_client:fetch_top_stories:25 - Fetching top stories from Hacker News.
+2025-01-20 23:35:29 | DEBUG | hacknews_client:parse_stories:47 - Parsing HTML content to extract top stories.
+2025-01-20 23:35:29 | INFO | hacknews_client:parse_stories:60 - Successfully parsed 30 stories.
+2025-01-20 23:35:29 | INFO | hacknews_client:export_top_stories:96 - Top stories exported to: reports/2025-01-20-23:35:29-hackernews.md
+2025-01-20 23:35:46 | INFO | main_hacknews_job:main:31 - [定时任务执行完毕]
+2025-01-20 23:36:22 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-20 23:36:22 | DEBUG | hacknews_client:export_top_stories:74 - Exporting top stories to a markdown file.
+2025-01-20 23:36:22 | DEBUG | hacknews_client:fetch_top_stories:25 - Fetching top stories from Hacker News.
+2025-01-20 23:36:23 | DEBUG | hacknews_client:parse_stories:47 - Parsing HTML content to extract top stories.
+2025-01-20 23:36:23 | INFO | hacknews_client:parse_stories:60 - Successfully parsed 30 stories.
+2025-01-20 23:36:23 | INFO | hacknews_client:export_top_stories:96 - Top stories exported to: reports/2025-01-20-23:36:23-hackernews.md
+2025-01-20 23:36:40 | INFO | main_hacknews_job:main:31 - [定时任务执行完毕]
+2025-01-20 23:37:27 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-20 23:37:27 | DEBUG | hacknews_client:export_top_stories:74 - Exporting top stories to a markdown file.
+2025-01-20 23:37:27 | DEBUG | hacknews_client:fetch_top_stories:25 - Fetching top stories from Hacker News.
+2025-01-20 23:37:28 | DEBUG | hacknews_client:parse_stories:47 - Parsing HTML content to extract top stories.
+2025-01-20 23:37:28 | INFO | hacknews_client:parse_stories:60 - Successfully parsed 30 stories.
+2025-01-20 23:37:28 | INFO | hacknews_client:export_top_stories:96 - Top stories exported to: reports/2025-01-20-23:37:28-hackernews.md
+2025-01-20 23:37:46 | INFO | main_hacknews_job:main:31 - [定时任务执行完毕]
+2025-01-20 23:39:27 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-20 23:39:27 | DEBUG | hacknews_client:export_top_stories:74 - Exporting top stories to a markdown file.
+2025-01-20 23:39:27 | DEBUG | hacknews_client:fetch_top_stories:25 - Fetching top stories from Hacker News.
+2025-01-20 23:39:28 | DEBUG | hacknews_client:parse_stories:47 - Parsing HTML content to extract top stories.
+2025-01-20 23:39:28 | INFO | hacknews_client:parse_stories:60 - Successfully parsed 30 stories.
+2025-01-20 23:39:28 | INFO | hacknews_client:export_top_stories:96 - Top stories exported to: reports/2025-01-20-23:39:28-hackernews.md
+2025-01-20 23:39:45 | INFO | main_hacknews_job:main:31 - [定时任务执行完毕]
+2025-01-20 23:40:11 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-20 23:40:11 | DEBUG | hacknews_client:export_top_stories:74 - Exporting top stories to a markdown file.
+2025-01-20 23:40:11 | DEBUG | hacknews_client:fetch_top_stories:25 - Fetching top stories from Hacker News.
+2025-01-20 23:40:12 | DEBUG | hacknews_client:parse_stories:47 - Parsing HTML content to extract top stories.
+2025-01-20 23:40:13 | INFO | hacknews_client:parse_stories:60 - Successfully parsed 30 stories.
+2025-01-20 23:40:13 | INFO | hacknews_client:export_top_stories:96 - Top stories exported to: reports/2025-01-20-23:40:13-hackernews.md
+2025-01-20 23:40:28 | INFO | main_hacknews_job:main:31 - [定时任务执行完毕]
+2025-01-21 08:08:38 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-21 08:08:38 | DEBUG | hacknews_client:export_top_stories:74 - Exporting top stories to a markdown file.
+2025-01-21 08:08:38 | DEBUG | hacknews_client:fetch_top_stories:25 - Fetching top stories from Hacker News.
+2025-01-21 08:08:39 | DEBUG | hacknews_client:parse_stories:47 - Parsing HTML content to extract top stories.
+2025-01-21 08:08:39 | INFO | hacknews_client:parse_stories:60 - Successfully parsed 30 stories.
+2025-01-21 08:08:39 | INFO | hacknews_client:export_top_stories:96 - Top stories exported to: reports/2025-01-21-08:08:39-hackernews.md
+2025-01-21 08:08:57 | INFO | main_hacknews_job:main:31 - [定时任务执行完毕]
+2025-01-21 08:18:30 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-21 08:18:30 | DEBUG | hacknews_client:export_top_stories:74 - Exporting top stories to a markdown file.
+2025-01-21 08:18:30 | DEBUG | hacknews_client:fetch_top_stories:25 - Fetching top stories from Hacker News.
+2025-01-21 08:18:32 | DEBUG | hacknews_client:parse_stories:47 - Parsing HTML content to extract top stories.
+2025-01-21 08:18:32 | INFO | hacknews_client:parse_stories:60 - Successfully parsed 30 stories.
+2025-01-21 08:18:32 | INFO | hacknews_client:export_top_stories:96 - Top stories exported to: reports/2025-01-21-08:18:32-hackernews.md
+2025-01-21 08:18:49 | INFO | main_hacknews_job:main:31 - [定时任务执行完毕]
+2025-01-21 08:20:20 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-21 08:20:20 | DEBUG | hacknews_client:export_top_stories:74 - Exporting top stories to a markdown file.
+2025-01-21 08:20:20 | DEBUG | hacknews_client:fetch_top_stories:25 - Fetching top stories from Hacker News.
+2025-01-21 08:20:21 | DEBUG | hacknews_client:parse_stories:47 - Parsing HTML content to extract top stories.
+2025-01-21 08:20:21 | INFO | hacknews_client:parse_stories:60 - Successfully parsed 30 stories.
+2025-01-21 08:20:21 | INFO | hacknews_client:export_top_stories:96 - Top stories exported to: reports/2025-01-21-08:20:21-hackernews.md
+2025-01-21 08:21:05 | INFO | main_hacknews_job:main:31 - [定时任务执行完毕]
+2025-01-21 08:27:54 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-21 08:27:54 | DEBUG | hacknews_client:export_top_stories:74 - Exporting top stories to a markdown file.
+2025-01-21 08:27:54 | DEBUG | hacknews_client:fetch_top_stories:25 - Fetching top stories from Hacker News.
+2025-01-21 08:27:55 | DEBUG | hacknews_client:parse_stories:47 - Parsing HTML content to extract top stories.
+2025-01-21 08:27:55 | INFO | hacknews_client:parse_stories:60 - Successfully parsed 30 stories.
+2025-01-21 08:27:55 | INFO | hacknews_client:export_top_stories:96 - Top stories exported to: reports/2025-01-21-08:27:55-hackernews.md
+2025-01-21 08:28:10 | INFO | main_hacknews_job:main:31 - [定时任务执行完毕]
+2025-01-21 08:33:22 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-21 08:33:52 | INFO | main_hacknews_job:main:32 - [定时任务执行完毕]
+2025-01-21 08:36:30 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-21 08:36:31 | INFO | main_hacknews_job:main:32 - [定时任务执行完毕]
+2025-01-21 08:46:56 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-21 08:46:57 | INFO | main_hacknews_job:main:32 - [定时任务执行完毕]
+2025-01-21 08:59:48 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-21 08:59:50 | INFO | main_hacknews_job:main:32 - [定时任务执行完毕]
+2025-01-21 09:02:16 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-21 09:02:18 | INFO | main_hacknews_job:main:32 - [定时任务执行完毕]
+2025-01-21 09:04:51 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-21 09:04:51 | DEBUG | hacknews_client:export_top_stories:74 - Exporting top stories to a markdown file.
+2025-01-21 09:04:51 | DEBUG | hacknews_client:fetch_top_stories:25 - Fetching top stories from Hacker News.
+2025-01-21 09:04:52 | DEBUG | hacknews_client:parse_stories:47 - Parsing HTML content to extract top stories.
+2025-01-21 09:04:52 | INFO | hacknews_client:parse_stories:60 - Successfully parsed 30 stories.
+2025-01-21 09:04:52 | INFO | hacknews_client:export_top_stories:96 - Top stories exported to: reports/2025-01-21-09:04:52-hackernews.md
+2025-01-21 09:05:08 | INFO | main_hacknews_job:main:31 - [定时任务执行完毕]
+2025-01-21 09:08:55 | INFO | main_hacknews_job:main:19 - start, lets go
+2025-01-21 09:08:55 | DEBUG | hacknews_client:export_top_stories:74 - Exporting top stories to a markdown file.
+2025-01-21 09:08:55 | DEBUG | hacknews_client:fetch_top_stories:25 - Fetching top stories from Hacker News.
+2025-01-21 09:08:56 | DEBUG | hacknews_client:parse_stories:47 - Parsing HTML content to extract top stories.
+2025-01-21 09:08:57 | INFO | hacknews_client:parse_stories:60 - Successfully parsed 30 stories.
+2025-01-21 09:08:57 | INFO | hacknews_client:export_top_stories:96 - Top stories exported to: reports/2025-01-21-09:08:57-hackernews.md
+2025-01-21 09:09:13 | INFO | main_hacknews_job:main:31 - [定时任务执行完毕]
