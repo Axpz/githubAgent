@@ -10,7 +10,12 @@ GitHub Agent is an open-source AI-based tool designed for developers and project
 - **Report Generation**: Generate regular update reports (daily/weekly) to keep track of project changes.
 
 ## Design
-为了充分利用边缘算力，设计架构如下![local image](./docs/arch.png "High-level design")
+为了充分利用边缘算力，设计架构如下：  
+![High-level Design - Private Compute](./docs/high-level-arch-private-cluster.png "High-level design for Private Compute")
+
+应用开发架构示例：  
+![High-level Design - Local Image](./docs/arch.png "High-level design for Local Compute")
+
 
 
 ## Installation
