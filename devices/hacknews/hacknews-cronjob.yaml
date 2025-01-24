@@ -5,9 +5,10 @@ metadata:
   labels:
     app: hacknews
 spec:
-  schedule: "0 6,12,20 * * *"  # 每天 6 点、12 点和 20 点运行
+  schedule: "0 6,10,12,20 * * *"  # 每天 6 点、12 点和 20 点运行
+  timeZone: "Asia/Shanghai"
   concurrencyPolicy: Forbid  # 禁止并发运行
-  successfulJobsHistoryLimit: 3  # 保存最近 3 次成功 Job 的记录
+  successfulJobsHistoryLimit: 1  # 保存最近 3 次成功 Job 的记录
   failedJobsHistoryLimit: 1  # 保存最近 1 次失败 Job 的记录
   jobTemplate:
     spec:

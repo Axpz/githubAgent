@@ -2,7 +2,7 @@ import requests
 import sys
 import os
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from logger import logger
@@ -80,8 +80,9 @@ class HackerNewsClient:
             return None
 
         # Use the current date and time if not provided
-        date = date or datetime.now().strftime('%Y-%m-%d')
-        hour = hour or datetime.now().strftime('%H:%M:%S')
+        beijingtime = datetime.now(timezone(timedelta(hours=8)))
+        date = date or beijingtime.strftime('%Y-%m-%d')
+        hour = hour or beijingtime.strftime('%H:%M:%S')
 
         # Prepare the directory and file paths
         dir_path = 'reports'

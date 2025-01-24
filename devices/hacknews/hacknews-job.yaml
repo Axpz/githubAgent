@@ -2,6 +2,8 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: hacknews-job
+  labels:
+    app: hacknews
 spec:
   template:
     spec:

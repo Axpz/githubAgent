@@ -9,7 +9,7 @@ from notifiers.hacknewsnotifier import HacknewsNotifier
 from reporters.report_generator import HacknewsReporter
 from llm import LLM
 from subscription_manager import SubscriptionManager
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 def Exit(signum, frame):
     LOG.info("exit")
@@ -27,8 +27,9 @@ def main():
 
     markdown_file_path = hacknews_client.export_top_stories()
     report, _ = reporter.generate_report(markdown_file_path)
-    if 0 <= datetime.now().hour < 24:
-        notifier.notify(report, datetime.now().strftime('%Y-%m-%d'))
+    beijingtime = datetime.now(timezone(timedelta(hours=8)))
+    if 0 <= beijingtime.hour < 24:
+        notifier.notify(report, beijingtime.strftime('%Y-%m-%d'))
         LOG.info(f"[send email]")
 
     LOG.info(f"[定时任务执行完毕]")
