@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefikdashboard
+  namespace: kube-system
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9000
+      targetPort: traefik
+  selector:
+    app.kubernetes.io/name: traefik
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefikdashboard
+  namespace: kube-system
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: "PathPrefix(`/dashboard`)"
+      kind: Rule
+      services:
+        - name: traefikdashboard
+          port: 9000
+
+# the dashboard cannot be proxyed fully because is call the api from the browser and the api is not exposed
+# since there is no need to expose api, so we can just debug mode in using port-forward
+# kubectl -n kube-system  port-forward service/traefikdashboard 9000:9000
